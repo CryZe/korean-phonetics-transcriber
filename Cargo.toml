@@ -1,0 +1,28 @@
+[package]
+name = "phonetics-to-hangul"
+version = "0.1.0"
+authors = ["Christopher Serr <christopher.serr@gmail.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+unicode-normalization = "0.1.13"
+reqwest = { version = "0.10.8", features = ["blocking", "json"], optional = true }
+serde = { version = "1.0.116", features = ["derive"] }
+anyhow = "1.0.33"
+unicase = "2.6.0"
+
+[features]
+lookup = ["reqwest"]
+
+[profile.dev]
+panic = "abort"
+
+[workspace]
+members = ["crates/*"]
+default-members = ["crates/cli"]
+
+[profile.release]
+panic = "abort"
+lto = "fat"
