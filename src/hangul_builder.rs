@@ -248,8 +248,14 @@ impl Builder {
         self.pos.advance();
     }
 
-    pub fn finish(mut self) -> String {
+    pub fn finish(&mut self) -> impl Iterator<Item = char> + '_ {
         self.finish_syllable();
-        self.buf.nfc().collect()
+        self.buf.nfc()
+    }
+
+    pub fn restart(&mut self) {
+        self.buf.clear();
+        self.buffered_cons = None;
+        self.pos = Position::InitialConsonant;
     }
 }

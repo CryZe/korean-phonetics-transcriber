@@ -1,7 +1,7 @@
 use std::env;
 
 use anyhow::{Context, Result};
-use phonetics_to_hangul::{darpabet, ipa_to_hangul, word_lookup};
+use phonetics_to_hangul::{arpabet, ipa_to_hangul, word_lookup};
 use structopt::StructOpt;
 
 /// Turns a word's pronunciation into 한글 with pronunciation as close as
@@ -23,7 +23,7 @@ fn try_run() -> Result<()> {
     let opt: Opt = StructOpt::from_args();
 
     if !opt.online {
-        let dictionary = darpabet::Dictionary::parse(darpabet::CMUDICT_07B)
+        let dictionary = arpabet::Dictionary::parse(arpabet::CMUDICT_07B)
             .context("Failed parsing the dictionary.")?;
 
         let pronunciation = dictionary
@@ -38,7 +38,10 @@ fn try_run() -> Result<()> {
         }
         println!();
 
-        println!("한글: {}", ipa_to_hangul::convert(pronunciation));
+        println!(
+            "한글: {}",
+            ipa_to_hangul::convert(&mut Default::default(), pronunciation).collect::<String>()
+        );
     } else {
         let user = env::var("DICT_USER").context(
             "For online usage, you need to provide the \
@@ -56,7 +59,8 @@ fn try_run() -> Result<()> {
             .lookup(&opt.word, &opt.lang)
             .context("Failed looking up the word.")?;
 
-        let hangul = ipa_to_hangul::convert(word.pronunciation.chars());
+        let hangul = ipa_to_hangul::convert(&mut Default::default(), word.pronunciation.chars())
+            .collect::<String>();
 
         println!("Word: {}", word.word);
         println!("Pronunciation: {}", word.pronunciation);

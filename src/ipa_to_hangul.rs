@@ -1,7 +1,10 @@
 use crate::hangul_builder::{self, Consonant, Position, Vowel};
 
-pub fn convert(phonetics: impl IntoIterator<Item = char>) -> String {
-    let mut builder = hangul_builder::Builder::new();
+pub fn convert(
+    builder: &mut hangul_builder::Builder,
+    phonetics: impl IntoIterator<Item = char>,
+) -> impl Iterator<Item = char> + '_ {
+    builder.restart();
 
     let mut chars = phonetics.into_iter().peekable();
 
@@ -91,13 +94,23 @@ pub fn convert(phonetics: impl IntoIterator<Item = char>) -> String {
             }
             'ʃ' | 'ʒ' => {
                 builder.push_consonant(Consonant::S);
-                // TODO: Suboptimal af
-                if !matches!(
-                    chars.peek().copied(),
-                    Some('j') | Some('ɪ') | Some('y') | Some('i')
-                ) {
-                    builder.push_vowel(Vowel::I)
+                let mut vowel = Vowel::I;
+                if let Some(c) = chars.peek() {
+                    if let Some(v) = match c {
+                        'ɛ' | 'æ' => Some(Vowel::Yae),
+                        'a' | 'ɐ' => Some(Vowel::Ya),
+                        'ʌ' | 'ɔ' | 'ɒ' | 'ɑ' => Some(Vowel::Yeo),
+                        'e' => Some(Vowel::Ye),
+                        'o' => Some(Vowel::Yo),
+                        'ʊ' | 'u' => Some(Vowel::Yu),
+                        'j' | 'ɪ' | 'y' | 'i' => Some(Vowel::I),
+                        _ => None,
+                    } {
+                        chars.next();
+                        vowel = v;
+                    }
                 }
+                builder.push_vowel(vowel);
             }
             'w' | 'v' => {
                 if let Some(c) = chars.peek() {

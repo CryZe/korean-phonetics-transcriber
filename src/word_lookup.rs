@@ -110,8 +110,8 @@ impl Client {
 
         let headword = match entry.headword {
             HeadWordList::Single(s) => s,
-            HeadWordList::Multiple(mut m) => m
-                .drain(..)
+            HeadWordList::Multiple(m) => m
+                .into_iter()
                 .next()
                 .context("The word contains a list of words that is empty.")?,
         };

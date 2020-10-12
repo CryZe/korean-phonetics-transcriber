@@ -6,11 +6,12 @@ use iui::{
     controls::{Entry, Label, VerticalBox},
     prelude::*,
 };
-use phonetics_to_hangul::{darpabet, ipa_to_hangul};
+use phonetics_to_hangul::{arpabet, hangul_builder, ipa_to_hangul};
 use LayoutStrategy::Compact;
 
 struct State {
-    dictionary: darpabet::Dictionary<'static>,
+    dictionary: arpabet::Dictionary<'static>,
+    builder: hangul_builder::Builder,
     ui: UI,
     hangul: Entry,
     pronunciation: Entry,
@@ -30,7 +31,7 @@ impl State {
 
             if let Some(pronunciation) = self.dictionary.look_up(word) {
                 pronunciations.extend(pronunciation.clone());
-                hanguls.push_str(&ipa_to_hangul::convert(pronunciation));
+                hanguls.extend(ipa_to_hangul::convert(&mut self.builder, pronunciation));
             } else {
                 pronunciations.push('?');
                 hanguls.push('?');
@@ -43,7 +44,7 @@ impl State {
 }
 
 fn main() {
-    let dictionary = darpabet::Dictionary::parse(darpabet::CMUDICT_07B).unwrap();
+    let dictionary = arpabet::Dictionary::parse(arpabet::CMUDICT_07B).unwrap();
 
     let ui = UI::init().unwrap();
     let mut win = Window::new(&ui, "Phonetics to 한글", 300, 100, WindowType::NoMenubar);
@@ -56,6 +57,7 @@ fn main() {
 
     let state = Rc::new(RefCell::new(State {
         dictionary,
+        builder: hangul_builder::Builder::new(),
         ui: ui.clone(),
         hangul: hangul.clone(),
         pronunciation: pronunciation.clone(),

@@ -1,4 +1,4 @@
-pub mod darpabet;
+pub mod arpabet;
 pub mod hangul_builder;
 pub mod ipa_to_hangul;
 
